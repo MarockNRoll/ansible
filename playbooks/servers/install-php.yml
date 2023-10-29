@@ -58,13 +58,13 @@
 
     # https://stackoverflow.com/questions/29822686/curl-error-60-ssl-certificate-unable-to-get-local-issuer-certificate
     # https://curl.haxx.se/docs/caextract.html
-    - name: Download Mozilla CA Certificate Store
-      get_url:
-        url: https://curl.haxx.se/ca/cacert.pem
-        dest: /etc/ssl/certs
-        owner: root
-        group: root
-        mode: 0777
+    #- name: Download Mozilla CA Certificate Store
+    #  get_url:
+    #    url: https://curl.haxx.se/ca/cacert.pem
+    #    dest: /etc/ssl/certs
+    #    owner: root
+    #    group: root
+    #    mode: 0777
 
     - name: Update PHP Configuration
       lineinfile:
@@ -114,14 +114,14 @@
         path: /home/{{ user_account }}/composer-setup.php
         state: absent
 
-    - name: Copy XDebug Configuration
-      template:
-        src: xdebug.ini.j2
-        dest: /etc/php/{{ php_version }}/mods-available/xdebug.ini
-        owner: root
-        group: root
-        mode: 0644
-      when: xdebug
+    #- name: Copy XDebug Configuration
+    #  template:
+    #    src: xdebug.ini.j2
+    #    dest: /etc/php/{{ php_version }}/mods-available/xdebug.ini
+    #    owner: root
+    #    group: root
+    #    mode: 0644
+    #  when: xdebug
 
     - name: Configure Firewall
       ufw:
