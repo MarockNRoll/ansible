@@ -95,6 +95,7 @@
       shell: php /home/{{ user_account }}/composer-setup.php --quiet --install-dir=/usr/local/bin --filename=composer
 
     - name: Make Composer Executable
+      become: true
       file:
         path: /usr/local/bin/composer
         owner: root
