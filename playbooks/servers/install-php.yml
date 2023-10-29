@@ -92,6 +92,7 @@
         dest: /home/{{ user_account }}/composer-setup.php
 
     - name: Run Composer Installer
+      become: true
       shell: php /home/{{ user_account }}/composer-setup.php --quiet --install-dir=/usr/local/bin --filename=composer
 
     - name: Make Composer Executable
