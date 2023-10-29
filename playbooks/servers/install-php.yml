@@ -66,25 +66,25 @@
     #    group: root
     #    mode: 0777
 
-    - name: Update PHP Configuration
-      lineinfile:
-        dest: /etc/php/{{ php_version }}/fpm/php.ini
-        regexp: '^;?{{ item.key }}\s+=\s+'
-        line: '{{ item.key }} = {{ item.value }}'
-        state: present
-        backup: yes
-      with_dict: "{{ php_fpm_config }}"
-      notify: Restart PHP FPM
+    #- name: Update PHP Configuration
+    #  lineinfile:
+    #    dest: /etc/php/{{ php_version }}/fpm/php.ini
+    #    regexp: '^;?{{ item.key }}\s+=\s+'
+    #    line: '{{ item.key }} = {{ item.value }}'
+    #    state: present
+    #    backup: yes
+    #  with_dict: "{{ php_fpm_config }}"
+    #  notify: Restart PHP FPM
 
-    - name: Update PHP CLI Configuration
-      lineinfile:
-        dest: /etc/php/{{ php_version }}/cli/php.ini
-        regexp: '^;?{{ item.key }}\s+=\s+'
-        line: '{{ item.key }} = {{ item.value }}'
-        state: present
-        backup: yes
-      with_dict: "{{ php_cli_config }}"
-      notify: Restart PHP FPM
+    #- name: Update PHP CLI Configuration
+    #  lineinfile:
+    #    dest: /etc/php/{{ php_version }}/cli/php.ini
+    #    regexp: '^;?{{ item.key }}\s+=\s+'
+    #    line: '{{ item.key }} = {{ item.value }}'
+    #    state: present
+    #    backup: yes
+    #  with_dict: "{{ php_cli_config }}"
+    #  notify: Restart PHP FPM
 
     - name: Download Composer Installer
       get_url:
