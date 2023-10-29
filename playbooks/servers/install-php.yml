@@ -1,0 +1,130 @@
+---
+- hosts: php
+  tasks:
+    - name: Add PHP PPA
+      apt_repository:
+        repo: ppa:ondrej/php
+      environment:
+        LC_ALL: C.UTF-8
+
+    - name: Install PHP Packages
+      apt:
+        name:
+          - php{{ php_version }}
+          - php{{ php_version }}-bcmath
+          - php{{ php_version }}-bz2
+          - php{{ php_version }}-cgi
+          - php{{ php_version }}-cli
+          - php{{ php_version }}-common
+          - php{{ php_version }}-curl
+          - php{{ php_version }}-dba
+          - php{{ php_version }}-dev
+          - php{{ php_version }}-enchant
+          - php{{ php_version }}-fpm
+          - php{{ php_version }}-gd
+          - php{{ php_version }}-gmp
+          - php{{ php_version }}-imap
+          - php{{ php_version }}-interbase
+          - php{{ php_version }}-intl
+          - php{{ php_version }}-ldap
+          - php{{ php_version }}-mbstring
+          - php{{ php_version }}-mysql
+          - php{{ php_version }}-odbc
+          - php{{ php_version }}-opcache
+          - php{{ php_version }}-pgsql
+          - php{{ php_version }}-phpdbg
+          - php{{ php_version }}-pspell
+          - php{{ php_version }}-readline
+          - php{{ php_version }}-snmp
+          - php{{ php_version }}-soap
+          - php{{ php_version }}-sqlite3
+          - php{{ php_version }}-sybase
+          - php{{ php_version }}-tidy
+          - php{{ php_version }}-xml
+          - php{{ php_version }}-xsl
+          - php{{ php_version }}-zip
+        state: latest
+        update_cache: yes
+
+      # https://github.com/oerdnj/deb.sury.org/wiki/Frequently-Asked-Questions#why-are-some-packages-named-phpxy--and-some-php-
+    - name: Install PECL Packages
+      apt:
+        name:
+          - php-imagick
+          - php-redis
+          - php-xdebug
+        state: latest
+        update_cache: yes
+
+    # https://stackoverflow.com/questions/29822686/curl-error-60-ssl-certificate-unable-to-get-local-issuer-certificate
+    # https://curl.haxx.se/docs/caextract.html
+    - name: Download Mozilla CA Certificate Store
+      get_url:
+        url: https://curl.haxx.se/ca/cacert.pem
+        dest: /etc/ssl/certs
+        owner: root
+        group: root
+        mode: 0777
+
+    - name: Update PHP Configuration
+      lineinfile:
+        dest: /etc/php/{{ php_version }}/fpm/php.ini
+        regexp: '^;?{{ item.key }}\s+=\s+'
+        line: '{{ item.key }} = {{ item.value }}'
+        state: present
+        backup: yes
+      with_dict: "{{ php_fpm_config }}"
+      notify: Restart PHP FPM
+
+    - name: Update PHP CLI Configuration
+      lineinfile:
+        dest: /etc/php/{{ php_version }}/cli/php.ini
+        regexp: '^;?{{ item.key }}\s+=\s+'
+        line: '{{ item.key }} = {{ item.value }}'
+        state: present
+        backup: yes
+      with_dict: "{{ php_cli_config }}"
+      notify: Restart PHP FPM
+
+    - name: Download Composer Installer
+      get_url:
+        url: https://getcomposer.org/installer
+        dest: /home/{{ user_account }}/composer-setup.php
+
+    - name: Run Composer Installer
+      shell: php /home/{{ user_account }}/composer-setup.php --quiet --install-dir=/usr/local/bin --filename=composer
+
+    - name: Make Composer Executable
+      file:
+        path: /usr/local/bin/composer
+        owner: root
+        group: root
+        mode: 0777
+
+    - name: Setup Composer Environment
+      copy:
+        src: composer.sh
+        dest: /etc/profile.d
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: Cleanup Composer Setup
+      file:
+        path: /home/{{ user_account }}/composer-setup.php
+        state: absent
+
+    - name: Copy XDebug Configuration
+      template:
+        src: xdebug.ini.j2
+        dest: /etc/php/{{ php_version }}/mods-available/xdebug.ini
+        owner: root
+        group: root
+        mode: 0644
+      when: xdebug
+
+    - name: Configure Firewall
+      ufw:
+        rule: allow
+        port: 9003
+      when: xdebug
